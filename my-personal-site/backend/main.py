@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
 import re
+import os
 
 app = FastAPI(title="Guled's AI Assistant")
 
@@ -94,4 +95,7 @@ async def chat(message: ChatMessage):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    HOST = os.getenv("HOST", "127.0.0.1")
+    PORT = int(os.getenv("PORT", "8000"))
+    RELOAD = os.getenv("RELOAD", "true").lower() in ("1", "true", "yes")
+    uvicorn.run(app, host=HOST, port=PORT, reload=RELOAD)
