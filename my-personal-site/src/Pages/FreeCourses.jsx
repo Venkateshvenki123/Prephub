@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { initialTracks } from "../data/freeCourses";
+import CoursesTable from "../components/CoursesTable";
 
 const FreeCourses = () => {
   const [tracks] = useState(initialTracks);
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'table'
 
   return (
     <div className="container">
@@ -37,8 +39,95 @@ const FreeCourses = () => {
         </div>
       </section>
 
-      {tracks.map((track, i) => (
-        <section key={i} style={{ marginBottom: "3rem" }}>
+      <section style={{ marginBottom: "2rem", display: "flex", justifyContent: "center", gap: "1rem" }}>
+        <button
+          onClick={() => setViewMode('cards')}
+          style={{
+            padding: "0.75rem 1.5rem",
+            backgroundColor: viewMode === 'cards' ? '#3b82f6' : '#475569',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '0.375rem',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: '600',
+            transition: 'background-color 0.2s'
+          }}
+        >
+          Card View
+        </button>
+        <button
+          onClick={() => setViewMode('table')}
+          style={{
+            padding: "0.75rem 1.5rem",
+            backgroundColor: viewMode === 'table' ? '#3b82f6' : '#475569',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '0.375rem',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: '600',
+            transition: 'background-color 0.2s'
+          }}
+        >
+          Table View
+        </button>
+      </section>
+
+      {viewMode === 'cards' ? (
+        // Card View
+        <>
+          {tracks.map((track, i) => (
+            <section key={i} style={{ marginBottom: "3rem" }}>
+              <div style={{ marginBottom: "1.5rem" }}>
+                <h2
+                  style={{
+                    fontSize: "2rem",
+                    background: "linear-gradient(135deg, #3b82f6, #60a5fa)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {track.title}
+                </h2>
+                <div style={{ color: "#94a3b8" }}>{track.level}</div>
+              </div>
+              <div className="card-grid">
+                {track.items.map((item, idx) => (
+                  <div key={idx} className="card" style={{ padding: "2.25rem" }}>
+                    <h3 style={{ fontSize: "1.4rem", marginBottom: "0.5rem", color: "#60a5fa" }}>
+                      {item.name}
+                    </h3>
+                    <p style={{ color: "#e2e8f0", marginBottom: "1.25rem" }}>{item.desc}</p>
+                    <div style={{ marginBottom: "1rem" }}>
+                      <span
+                        style={{
+                          color: item.free_certificate ? '#10b981' : '#94a3b8',
+                          fontWeight: item.free_certificate ? 'bold' : 'normal',
+                        }}
+                      >
+                        {item.cert_status}
+                      </span>
+                    </div>
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-secondary"
+                      style={{ padding: "0.85rem 1.75rem", fontSize: "0.95rem" }}
+                    >
+                      Open course
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </>
+      ) : (
+        // Table View
+        <section style={{ marginBottom: "3rem" }}>
           <div style={{ marginBottom: "1.5rem" }}>
             <h2
               style={{
@@ -49,31 +138,12 @@ const FreeCourses = () => {
                 marginBottom: "0.25rem",
               }}
             >
-              {track.title}
+              All Courses
             </h2>
-            <div style={{ color: "#94a3b8" }}>{track.level}</div>
           </div>
-          <div className="card-grid">
-            {track.items.map((item, idx) => (
-              <div key={idx} className="card" style={{ padding: "2.25rem" }}>
-                <h3 style={{ fontSize: "1.4rem", marginBottom: "0.5rem", color: "#60a5fa" }}>
-                  {item.name}
-                </h3>
-                <p style={{ color: "#e2e8f0", marginBottom: "1.25rem" }}>{item.desc}</p>
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                  style={{ padding: "0.85rem 1.75rem", fontSize: "0.95rem" }}
-                >
-                  Open course
-                </a>
-              </div>
-            ))}
-          </div>
+          <CoursesTable data={tracks.flatMap(track => track.items)} />
         </section>
-      ))}
+      )}
 
       <section style={{ margin: "4rem 0 3rem" }}>
         <div

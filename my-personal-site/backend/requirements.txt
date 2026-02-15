@@ -1,4 +1,9 @@
 fastapi
 uvicorn[standard]
 pydantic
-# Optional: add other packages your app needs
+pydantic[email]
+mysql-connector-python
+python-dotenv
+bcrypt
+pyjwt
+passlib

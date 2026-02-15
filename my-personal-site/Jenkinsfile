@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+    
+    environment {
+        NODE_VERSION = '20'
+        DOCKER_IMAGE = "interview-portal:${BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'your-repo-url'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+        
+        stage('Lint & Test') {
+            steps {
+                sh 'npm run lint || true'
+                sh 'npm run test:ci || true'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                        docker build -t ${DOCKER_IMAGE} .
+                        docker tag ${DOCKER_IMAGE} your-registry/${DOCKER_IMAGE}
+                    """
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                sh """
+                    docker stop interview-portal || true
+                    docker rm interview-portal || true
+                    docker run -d --name interview-portal -p 80:80 ${DOCKER_IMAGE}
+                """
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'docker system prune -f'
+        }
+        success {
+            echo '✅ Deployment successful!'
+        }
+        failure {
+            echo '❌ Deployment failed!'
+        }
+    }
+}

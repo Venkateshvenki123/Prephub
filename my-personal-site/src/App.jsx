@@ -10,7 +10,7 @@ import Jobs from "./Pages/Jobs";
 import FreeCourses from "./pages/FreeCourses";
 import AdminCourses from "./pages/AdminCourses";
 import AdminDashboard from "./pages/AdminDashboard";
-import Auth from "./pages/Auth";
+// Auth import removed (not used in routes)
 
 function App() {
   return (
@@ -27,7 +27,6 @@ function App() {
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/notes" element={<Notes />} />
           <Route path="/about" element={<About />} />
-          <Route path="/auth" element={<Auth />} />
         </Routes>
       </main>
       <Chatbot />

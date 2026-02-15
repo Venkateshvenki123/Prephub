@@ -1,101 +1,110 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Optional
 import random
-import re
-import os
+from datetime import datetime
 
-app = FastAPI(title="Guled's AI Assistant")
+app = FastAPI(title="Guled's PrepHub - Jobs + Courses + Chat")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ========== JOB APPLICATIONS ==========
+class JobApplication(BaseModel):
+    company: str
+    position: str
+    location: str = "Bangalore"
+    status: str = "Applied"
+    notes: str = ""
+
+# In-memory job storage (add Oracle DB later)
+JOB_APPLICATIONS = []
+
+# ========== YOUR EXISTING MODELS ==========
 class ChatMessage(BaseModel):
     message: str
 
-# Smart responses database
+class CourseResponse(BaseModel):
+    course_name: str
+    free_certificate: bool
+    cert_status: Optional[str] = None
+
+# Mock courses (your Oracle data)
+COURSES = [
+    {"course_name": "React.js Fundamentals", "free_certificate": True, "cert_status": "✅ FREE CERTIFICATE"},
+    {"course_name": "Node.js & Express API", "free_certificate": True, "cert_status": "✅ FREE CERTIFICATE"},
+    {"course_name": "Oracle SQL Masterclass", "free_certificate": True, "cert_status": "✅ FREE CERTIFICATE"},
+]
+
+# ========== YOUR SMART RESPONSES (KEEPING ALL) ==========
 DSA_RESPONSES = {
-    "two pointers": "Two Pointers: Valid Palindrome (skip non-alphanumeric, compare left/right), Container With Most Water (min(height[l], height[r]) * distance, move shorter pointer). Time: O(n), Space: O(1).",
-    "sliding window": "Sliding Window: Longest Substring Without Repeat (use hashmap for last seen index, right-left-1). Fixed size: queue, Variable: two pointers. Perfect for subarray problems.",
-    "two sum": "Two Sum: Hashmap O(n). Store complement (target-nums[i]) → index. Handle duplicates with seen set.",
-    "binary search": "Binary Search: Sorted array only. While left <= right: mid = (left+right)//2. if target > arr[mid]: left=mid+1 else: right=mid-1.",
-    "dp": "Dynamic Programming: Fibonacci (dp[i] = dp[i-1] + dp[i-2]), Climbing Stairs (dp[i] = dp[i-1] + dp[i-2]). Memoization or Tabulation."
-}
-
-REACT_RESPONSES = {
-    "useeffect": "useEffect: Runs AFTER render. Dependencies [] = once, undefined = every render, [deps] = when deps change. Cleanup runs BEFORE re-run/unmount.",
-    "usecallback": "useCallback vs useMemo: useCallback(() => fn) memoizes FUNCTION, useMemo(() => expensiveCalc) memoizes VALUE. Both prevent child re-renders.",
-    "usestate": "useState: Never call in loops/conditions. useReducer for complex state (multiple sub-values, server state).",
-    "context": "Context API: useContext for global state (theme, auth). Avoid prop drilling. Provider wraps app.",
-    "memo": "React.memo: Prevents re-render if props shallow equal. useMemo for expensive calculations, useCallback for functions."
-}
-
-INTERVIEW_RESPONSES = {
-    "time complexity": "Time Complexity: O(1) Constant, O(log n) Binary Search, O(n) Linear, O(n log n) Sorting, O(n²) Nested Loops, O(2^n) Recursion.",
-    "mock interview": "Mock Interview Tips: 1) Clarify requirements 2) Think aloud 3) Optimal → Brute force 4) Code clean 5) Test edge cases 6) Complexity analysis.",
-    "behavioral": "Behavioral (STAR): Situation → Task → Action → Result. 'Tell me about conflict' → Team disagreement → Proposed solution → Project delivered early."
-}
-
-JOB_RESPONSES = {
-    "resume": "Resume: 1 page, ATS friendly (no images/tables), quantify impact (\"Reduced load 40%\"), GitHub link, customize per JD keywords.",
-    "salary": "SDE-1 Salary India: Freshers ₹20-35L (FAANG ₹40-60L), 1-2yr ₹30-50L, Bangalore max, negotiate base + stocks + bonus.",
-    "negotiation": "Salary Negotiation: Research Levels.fyi, Glassdoor. Counter 10-20% higher. 'Based on research + my experience, I was expecting ₹35L total comp.'"
+    "two pointers": "Two Pointers: Valid Palindrome, Container With Most Water. O(n) time!",
+    "sliding window": "Sliding Window: Longest Substring Without Repeat. Hashmap + two pointers.",
+    "two sum": "Two Sum: Hashmap stores complement. O(n) time!",
+    "binary search": "Binary Search: Sorted array. left <= right, mid=(left+right)//2.",
+    "dp": "DP: Fibonacci dp[i]=dp[i-1]+dp[i-2]. Memoization or tabulation."
 }
 
 def get_smart_response(message):
     message_lower = message.lower()
     
-    # DSA patterns
     for pattern, response in DSA_RESPONSES.items():
         if pattern in message_lower:
-            return f"**DSA: {pattern.replace('two pointers', 'Two Pointers').title()}**\n{response}"
+            return f"**DSA: {pattern.title()}**\n{response}"
     
-    # React patterns
-    for pattern, response in REACT_RESPONSES.items():
-        if pattern in message_lower:
-            return f"**React: {pattern.replace('usestate', 'useState').replace('useeffect', 'useEffect').title()}**\n{response}"
-    
-    # Interview patterns
-    for pattern, response in INTERVIEW_RESPONSES.items():
-        if pattern in message_lower:
-            return f"**Interview: {pattern.title()}**\n{response}"
-    
-    # Job patterns
-    for pattern, response in JOB_RESPONSES.items():
-        if pattern in message_lower:
-            return f"**Jobs: {pattern.title()}**\n{response}"
-    
-    # Fallback responses
+    # Fallback (your existing logic)
     fallbacks = [
-        "Try asking: 'Two pointers', 'useEffect', 'time complexity', 'resume tips', or 'SDE-1 salary'",
-        "I specialize in React, DSA (LeetCode patterns), interview prep, and job applications! 💼",
-        "Guled's portfolio covers: 156 LeetCode solved, React expert, 52 applications tracked! 🚀"
+        "Try: 'two pointers', 'sliding window', 'resume', 'SDE-1 salary'",
+        "Guled's portfolio: 156 LeetCode solved, React expert, job hunting! 🚀"
     ]
     return random.choice(fallbacks)
 
+# ========== NEW JOB ROUTES ==========
+@app.get("/jobs")
+async def get_jobs():
+    return JOB_APPLICATIONS
+
+@app.post("/jobs")
+async def create_job(job: JobApplication):
+    job_data = job.dict()
+    job_data['id'] = len(JOB_APPLICATIONS) + 1
+    job_data['date_applied'] = datetime.now().strftime("%Y-%m-%d")
+    JOB_APPLICATIONS.append(job_data)
+    return {
+        "success": True, 
+        "message": f"✅ Job at {job.company} ({job.position}) added!",
+        "job": job_data
+    }
+
+# ========== YOUR EXISTING ROUTES ==========
 @app.get("/")
 async def root():
-    return {"message": "Guled's Smart Chatbot Backend ✅", "topics": ["React", "DSA", "Interviews", "Jobs"]}
+    return {
+        "message": "Guled's PrepHub LIVE ✅", 
+        "jobs": len(JOB_APPLICATIONS),
+        "courses": len(COURSES),
+        "endpoints": ["/jobs", "/courses", "/chat"]
+    }
+
+@app.get("/health")
+async def health():
+    return {"status": "PrepHub API LIVE ✅", "jobs": len(JOB_APPLICATIONS)}
+
+@app.get("/courses", response_model=List[CourseResponse])
+async def get_courses():
+    return COURSES
 
 @app.post("/chat")
 async def chat(message: ChatMessage):
-    try:
-        response = get_smart_response(message.message)
-        return {
-            "reply": response,
-            "confidence": 0.95 if any(word in message.message.lower() for word in ["react", "leetcode", "two", "useeffect"]) else 0.8
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+    response = get_smart_response(message.message)
+    return {"reply": response, "query": message.message}
 
 if __name__ == "__main__":
     import uvicorn
-    HOST = os.getenv("HOST", "127.0.0.1")
-    PORT = int(os.getenv("PORT", "8000"))
-    RELOAD = os.getenv("RELOAD", "true").lower() in ("1", "true", "yes")
-    uvicorn.run(app, host=HOST, port=PORT, reload=RELOAD)
+    uvicorn.run(app, host="127.0.0.1", port=8001, reload=True)

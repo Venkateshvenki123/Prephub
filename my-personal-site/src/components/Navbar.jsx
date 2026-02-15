@@ -13,7 +13,6 @@ const Navbar = () => (
           <NavLink to="/jobs" className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}>Jobs</NavLink>
           <NavLink to="/notes" className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}>Notes</NavLink>
           <NavLink to="/about" className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}>About</NavLink>
-          <NavLink to="/auth" className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}>Login / Sign Up</NavLink>
           {/* <NavLink to="/admin/courses" className={({isActive}) => `nav-link ${isActive ? "active" : ""}`}>
             Admin
           </NavLink> */}
