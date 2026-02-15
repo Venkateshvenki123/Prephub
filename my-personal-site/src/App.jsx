@@ -7,7 +7,7 @@ import Internship from "./Pages/Internship";
 import Notes from "./Pages/Notes";
 import About from "./Pages/About";
 import Jobs from "./Pages/Jobs";
-import FreeCourses from "./pages/FreeCourses.jsx"
+import FreeCourses from "./pages/FreeCourses.jsx" ;
 import AdminCourses from "./pages/AdminCourses";
 import AdminDashboard from "./pages/AdminDashboard";
 // Auth import removed (not used in routes)
